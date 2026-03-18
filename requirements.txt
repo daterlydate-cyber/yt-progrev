@@ -1,0 +1,6 @@
+undetected-chromedriver>=3.5.0
+selenium>=4.15.0
+PyQt5>=5.15.0
+schedule>=1.2.0
+fake-useragent>=1.4.0
+python-dotenv>=1.0.0
