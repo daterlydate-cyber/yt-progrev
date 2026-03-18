@@ -41,6 +41,8 @@ class PosterWidget(QWidget):
 
     HISTORY_COLUMNS = ["Дата", "Профиль", "Файл", "Заголовок", "Статус"]
     QUEUE_COLUMNS = ["ID", "Дата/Время", "Аккаунт", "Заголовок", "Статус"]
+    TITLE_MAX_LENGTH = 100
+    DESC_MAX_LENGTH = 5000
 
     def __init__(
         self,
@@ -111,11 +113,11 @@ class PosterWidget(QWidget):
         title_row = QHBoxLayout()
         title_row.addWidget(QLabel("Заголовок:"))
         self.title_edit = QLineEdit()
-        self.title_edit.setPlaceholderText("Название видео (макс. 100 символов)")
-        self.title_edit.setMaxLength(100)
+        self.title_edit.setPlaceholderText(f"Название видео (макс. {self.TITLE_MAX_LENGTH} символов)")
+        self.title_edit.setMaxLength(self.TITLE_MAX_LENGTH)
         self.title_edit.textChanged.connect(self._on_title_changed)
         title_row.addWidget(self.title_edit)
-        self.title_counter = QLabel("0/100")
+        self.title_counter = QLabel(f"0/{self.TITLE_MAX_LENGTH}")
         self.title_counter.setStyleSheet("color: #a0a0b0;")
         title_row.addWidget(self.title_counter)
         upload_layout.addLayout(title_row)
@@ -123,7 +125,7 @@ class PosterWidget(QWidget):
         # Description with char counter
         desc_label_row = QHBoxLayout()
         desc_label_row.addWidget(QLabel("Описание:"))
-        self.desc_counter = QLabel("0/5000")
+        self.desc_counter = QLabel(f"0/{self.DESC_MAX_LENGTH}")
         self.desc_counter.setStyleSheet("color: #a0a0b0;")
         desc_label_row.addStretch()
         desc_label_row.addWidget(self.desc_counter)
@@ -131,7 +133,7 @@ class PosterWidget(QWidget):
 
         self.desc_edit = QTextEdit()
         self.desc_edit.setMaximumHeight(100)
-        self.desc_edit.setPlaceholderText("Описание видео (макс. 5000 символов)...")
+        self.desc_edit.setPlaceholderText(f"Описание видео (макс. {self.DESC_MAX_LENGTH} символов)...")
         self.desc_edit.textChanged.connect(self._on_desc_changed)
         upload_layout.addWidget(self.desc_edit)
 
@@ -258,15 +260,15 @@ class PosterWidget(QWidget):
             self.profile_combo.setCurrentIndex(idx)
 
     def _on_title_changed(self, text: str) -> None:
-        self.title_counter.setText(f"{len(text)}/100")
+        self.title_counter.setText(f"{len(text)}/{self.TITLE_MAX_LENGTH}")
 
     def _on_desc_changed(self) -> None:
         text = self.desc_edit.toPlainText()
-        if len(text) > 5000:
+        if len(text) > self.DESC_MAX_LENGTH:
             cursor = self.desc_edit.textCursor()
-            self.desc_edit.setPlainText(text[:5000])
+            self.desc_edit.setPlainText(text[:self.DESC_MAX_LENGTH])
             self.desc_edit.setTextCursor(cursor)
-        self.desc_counter.setText(f"{min(len(text), 5000)}/5000")
+        self.desc_counter.setText(f"{min(len(text), self.DESC_MAX_LENGTH)}/{self.DESC_MAX_LENGTH}")
 
     def _select_video(self) -> None:
         file_path, _ = QFileDialog.getOpenFileName(

@@ -42,6 +42,9 @@ class StatCard(QFrame):
 class DashboardWidget(QWidget):
     """Main dashboard widget."""
 
+    REFRESH_INTERVAL_MS = 30000
+    MAX_RECENT_ITEMS = 50
+
     def __init__(self, profile_manager, browser_manager, scheduler, parent=None):
         super().__init__(parent)
         self.profile_manager = profile_manager
@@ -52,7 +55,7 @@ class DashboardWidget(QWidget):
         # Refresh stats every 30 seconds
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.refresh_stats)
-        self._timer.start(30000)
+        self._timer.start(self.REFRESH_INTERVAL_MS)
         self.refresh_stats()
 
     def _setup_ui(self):
@@ -135,5 +138,5 @@ class DashboardWidget(QWidget):
         item = QListWidgetItem(action)
         self.recent_list.insertItem(0, item)
         # Keep only last 50 items
-        while self.recent_list.count() > 50:
+        while self.recent_list.count() > self.MAX_RECENT_ITEMS:
             self.recent_list.takeItem(self.recent_list.count() - 1)

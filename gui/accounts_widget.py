@@ -249,8 +249,8 @@ class AccountsWidget(QWidget):
                                     proxy=item.get("proxy"),
                                     notes=item.get("notes", ""),
                                 )
-                            except Exception:
-                                pass
+                            except Exception as e:
+                                logger.warning("Failed to import account %s: %s", item["name"], e)
             else:
                 # TXT: one account name per line
                 with open(path, "r", encoding="utf-8") as f:
@@ -259,8 +259,8 @@ class AccountsWidget(QWidget):
                         if name:
                             try:
                                 self.profile_manager.create_profile(name=name)
-                            except Exception:
-                                pass
+                            except Exception as e:
+                                logger.warning("Failed to import account %s: %s", name, e)
             self.refresh()
             QMessageBox.information(self, "Успех", "Аккаунты импортированы.")
         except Exception as e:
