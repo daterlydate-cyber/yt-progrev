@@ -25,9 +25,18 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      - name: Create PyInstaller hook for selenium
+        run: |
+          New-Item -ItemType Directory -Force -Path hooks
+          @"
+          from PyInstaller.utils.hooks import collect_submodules, collect_data_files
+          hiddenimports = collect_submodules('selenium')
+          datas = collect_data_files('selenium')
+          "@ | Out-File -FilePath hooks/hook-selenium.py -Encoding utf8
+
       - name: Build executable
         run: |
-          pyinstaller main.spec
+          pyinstaller main.spec --additional-hooks-dir=hooks
 
       - name: Install Inno Setup
         run: choco install innosetup -y
