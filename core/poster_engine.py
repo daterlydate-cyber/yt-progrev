@@ -142,11 +142,11 @@ class PosterEngine(QThread):
                 "#title-textarea #child-input, "
                 "ytcp-video-title #textbox",
             )
-            # Очищаем поле
+            # Очищаем поле через Ctrl+A и Delete
             title_field.click()
             HumanActions.random_delay(0.3, 0.7)
-            title_field.send_keys("\ue009a")  # Ctrl+A
-            title_field.send_keys("\ue003")   # Backspace
+            title_field.send_keys(Keys.CONTROL + "a")
+            title_field.send_keys(Keys.BACKSPACE)
             HumanActions.type_like_human(title_field, self.title)
         except NoSuchElementException as exc:
             logger.warning("Поле заголовка не найдено: %s", exc)

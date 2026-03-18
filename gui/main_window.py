@@ -171,7 +171,8 @@ class MainWindow(QMainWindow):
             self, "Импорт конфигурации", "", "JSON файлы (*.json)"
         )
         if file_path:
-            import json, shutil
+            import json
+            import shutil
             try:
                 shutil.copy2(file_path, "config.json")
                 QMessageBox.information(
