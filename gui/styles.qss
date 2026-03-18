@@ -1,401 +1,538 @@
 /* ========================================
-   YT-Progrev — Тёмная тема (Catppuccin Mocha)
+   YT-Progrev — YouTube SMM Panel Dark Theme
    ======================================== */
 
-/* === Общий фон и текст === */
+/* === Base === */
 QWidget {
-    background-color: #1e1e2e;
-    color: #cdd6f4;
+    background-color: #0f0f1a;
+    color: #ffffff;
     font-family: "Segoe UI", "Arial", sans-serif;
     font-size: 13px;
 }
 
 QMainWindow {
-    background-color: #1e1e2e;
+    background-color: #0f0f1a;
 }
 
-/* === Главное меню === */
-QMenuBar {
-    background-color: #181825;
-    color: #cdd6f4;
-    border-bottom: 1px solid #313244;
-    padding: 2px;
+/* === Sidebar === */
+#sidebar {
+    background-color: #1a1a2e;
+    border-right: 1px solid #2a2a4a;
+    min-width: 220px;
+    max-width: 220px;
 }
 
-QMenuBar::item:selected {
-    background-color: #313244;
-    border-radius: 4px;
+#sidebarTitle {
+    color: #e94560;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 8px 4px;
 }
 
-QMenu {
-    background-color: #181825;
-    color: #cdd6f4;
-    border: 1px solid #313244;
-    border-radius: 6px;
-    padding: 4px;
+#sidebarVersion {
+    color: #a0a0b0;
+    font-size: 11px;
+    padding: 0px 4px 8px 4px;
 }
 
-QMenu::item:selected {
-    background-color: #89b4fa;
-    color: #1e1e2e;
-    border-radius: 4px;
-}
-
-QMenu::separator {
-    height: 1px;
-    background-color: #313244;
-    margin: 4px 8px;
-}
-
-/* === Вкладки (QTabWidget) === */
-QTabWidget::pane {
-    background-color: #1e1e2e;
-    border: 1px solid #313244;
-    border-radius: 6px;
-}
-
-QTabBar::tab {
-    background-color: #181825;
-    color: #a6adc8;
-    padding: 8px 18px;
-    margin-right: 2px;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    border: 1px solid #313244;
-    border-bottom: none;
-}
-
-QTabBar::tab:selected {
-    background-color: #1e1e2e;
-    color: #89b4fa;
-    border-bottom: 2px solid #89b4fa;
-}
-
-QTabBar::tab:hover:!selected {
-    background-color: #313244;
-    color: #cdd6f4;
-}
-
-/* === Кнопки (QPushButton) === */
-QPushButton {
-    background-color: #313244;
-    color: #cdd6f4;
-    border: 1px solid #45475a;
-    border-radius: 6px;
-    padding: 6px 14px;
-    min-height: 28px;
-}
-
-QPushButton:hover {
-    background-color: #89b4fa;
-    color: #1e1e2e;
-    border-color: #89b4fa;
-}
-
-QPushButton:pressed {
-    background-color: #74c7ec;
-    color: #1e1e2e;
-}
-
-QPushButton:disabled {
-    background-color: #181825;
-    color: #585b70;
-    border-color: #313244;
-}
-
-QPushButton:checked {
-    background-color: #a6e3a1;
-    color: #1e1e2e;
-    border-color: #a6e3a1;
-}
-
-/* === Текстовые поля (QLineEdit) === */
-QLineEdit {
-    background-color: #181825;
-    color: #cdd6f4;
-    border: 1px solid #45475a;
-    border-radius: 6px;
-    padding: 5px 8px;
-    selection-background-color: #89b4fa;
-    selection-color: #1e1e2e;
-}
-
-QLineEdit:focus {
-    border-color: #89b4fa;
-}
-
-QLineEdit:disabled {
-    background-color: #11111b;
-    color: #585b70;
-}
-
-QLineEdit::placeholder {
-    color: #6c7086;
-}
-
-/* === Многострочный текст (QTextEdit) === */
-QTextEdit {
-    background-color: #181825;
-    color: #cdd6f4;
-    border: 1px solid #45475a;
-    border-radius: 6px;
-    padding: 4px;
-    selection-background-color: #89b4fa;
-    selection-color: #1e1e2e;
-}
-
-QTextEdit:focus {
-    border-color: #89b4fa;
-}
-
-QTextEdit#logTextEdit {
-    background-color: #11111b;
-    font-family: "Courier New", "Consolas", monospace;
-    font-size: 12px;
-}
-
-/* === Таблицы (QTableWidget) === */
-QTableWidget {
-    background-color: #181825;
-    color: #cdd6f4;
-    border: 1px solid #313244;
-    border-radius: 6px;
-    gridline-color: #313244;
-    selection-background-color: #313244;
-    selection-color: #89b4fa;
-    alternate-background-color: #1e1e2e;
-}
-
-QTableWidget::item {
-    padding: 4px 8px;
-}
-
-QTableWidget::item:selected {
-    background-color: #313244;
-    color: #89b4fa;
-}
-
-QHeaderView::section {
-    background-color: #11111b;
-    color: #89b4fa;
+QPushButton#navButton {
+    background-color: transparent;
+    color: #a0a0b0;
     border: none;
-    border-bottom: 1px solid #313244;
-    border-right: 1px solid #313244;
-    padding: 6px 8px;
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 13px;
+    min-height: 40px;
+}
+
+QPushButton#navButton:hover {
+    background-color: #16213e;
+    color: #ffffff;
+}
+
+QPushButton#navButton:checked {
+    background-color: #e94560;
+    color: #ffffff;
     font-weight: bold;
 }
 
-/* === Выпадающий список (QComboBox) === */
-QComboBox {
-    background-color: #181825;
-    color: #cdd6f4;
-    border: 1px solid #45475a;
-    border-radius: 6px;
-    padding: 5px 8px;
-    min-height: 28px;
+/* === Content area === */
+#contentArea {
+    background-color: #0f0f1a;
 }
 
-QComboBox:hover {
-    border-color: #89b4fa;
+/* === Page titles === */
+QLabel#pageTitle {
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: bold;
+    padding-bottom: 4px;
 }
 
-QComboBox::drop-down {
-    border: none;
-    width: 20px;
+/* === Stat cards === */
+QFrame#statCard {
+    background-color: #16213e;
+    border: 1px solid #2a2a4a;
+    border-radius: 12px;
 }
 
-QComboBox::down-arrow {
-    border: 2px solid #89b4fa;
-    border-top: none;
-    border-right: none;
-    width: 6px;
-    height: 6px;
-    transform: rotate(-45deg);
-    margin-right: 6px;
+QLabel#statValue {
+    color: #e94560;
+    font-size: 28px;
+    font-weight: bold;
 }
 
-QComboBox QAbstractItemView {
-    background-color: #181825;
-    color: #cdd6f4;
-    border: 1px solid #313244;
-    selection-background-color: #89b4fa;
-    selection-color: #1e1e2e;
-    border-radius: 6px;
+QLabel#statTitle {
+    color: #a0a0b0;
+    font-size: 12px;
 }
 
-/* === Прогресс-бар (QProgressBar) === */
-QProgressBar {
-    background-color: #181825;
-    border: 1px solid #313244;
-    border-radius: 6px;
-    text-align: center;
-    color: #cdd6f4;
-    min-height: 20px;
-}
-
-QProgressBar::chunk {
-    background-color: #89b4fa;
-    border-radius: 5px;
-}
-
-/* === Спинбоксы (QSpinBox / QDoubleSpinBox) === */
-QSpinBox, QDoubleSpinBox {
-    background-color: #181825;
-    color: #cdd6f4;
-    border: 1px solid #45475a;
-    border-radius: 6px;
-    padding: 4px 6px;
-    min-height: 28px;
-}
-
-QSpinBox:focus, QDoubleSpinBox:focus {
-    border-color: #89b4fa;
-}
-
-QSpinBox::up-button, QSpinBox::down-button,
-QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
-    background-color: #313244;
-    border: none;
-    border-radius: 3px;
-    width: 16px;
-}
-
-QSpinBox::up-button:hover, QSpinBox::down-button:hover,
-QDoubleSpinBox::up-button:hover, QDoubleSpinBox::down-button:hover {
-    background-color: #89b4fa;
-}
-
-/* === Чекбоксы (QCheckBox) === */
-QCheckBox {
-    color: #cdd6f4;
-    spacing: 6px;
-}
-
-QCheckBox::indicator {
-    width: 16px;
-    height: 16px;
-    border: 1px solid #45475a;
-    border-radius: 4px;
-    background-color: #181825;
-}
-
-QCheckBox::indicator:checked {
-    background-color: #89b4fa;
-    border-color: #89b4fa;
-}
-
-QCheckBox::indicator:hover {
-    border-color: #89b4fa;
-}
-
-/* === Группы (QGroupBox) === */
+/* === Group boxes === */
 QGroupBox {
-    background-color: #1e1e2e;
-    border: 1px solid #313244;
-    border-radius: 8px;
-    margin-top: 12px;
-    padding: 8px;
+    background-color: #16213e;
+    border: 1px solid #2a2a4a;
+    border-radius: 10px;
+    margin-top: 8px;
+    padding-top: 16px;
+    font-weight: bold;
+    color: #ffffff;
 }
 
 QGroupBox::title {
     subcontrol-origin: margin;
     subcontrol-position: top left;
-    left: 12px;
-    padding: 0 4px;
-    color: #89b4fa;
-    font-weight: bold;
+    padding: 0 8px;
+    color: #e94560;
+    font-size: 13px;
 }
 
-/* === Список (QListWidget) === */
-QListWidget {
-    background-color: #181825;
-    color: #cdd6f4;
-    border: 1px solid #313244;
+/* === Buttons === */
+QPushButton {
+    background-color: #16213e;
+    color: #ffffff;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 6px 16px;
+    min-height: 32px;
+}
+
+QPushButton:hover {
+    background-color: #0f3460;
+    border-color: #e94560;
+    color: #ffffff;
+}
+
+QPushButton:pressed {
+    background-color: #e94560;
+    border-color: #e94560;
+}
+
+QPushButton:disabled {
+    background-color: #1a1a2e;
+    color: #555577;
+    border-color: #2a2a4a;
+}
+
+QPushButton#accentButton {
+    background-color: #e94560;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    padding: 8px 20px;
+}
+
+QPushButton#accentButton:hover {
+    background-color: #c73652;
+}
+
+QPushButton#accentButton:pressed {
+    background-color: #a02840;
+}
+
+/* === Input fields === */
+QLineEdit, QTextEdit, QPlainTextEdit {
+    background-color: #16213e;
+    color: #ffffff;
+    border: 1px solid #2a2a4a;
+    border-radius: 6px;
+    padding: 6px 10px;
+    selection-background-color: #e94560;
+}
+
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {
+    border-color: #e94560;
+    outline: none;
+}
+
+QLineEdit::placeholder, QTextEdit::placeholder {
+    color: #555577;
+}
+
+/* === Combo boxes === */
+QComboBox {
+    background-color: #16213e;
+    color: #ffffff;
+    border: 1px solid #2a2a4a;
+    border-radius: 6px;
+    padding: 6px 10px;
+    min-height: 32px;
+}
+
+QComboBox:focus {
+    border-color: #e94560;
+}
+
+QComboBox::drop-down {
+    border: none;
+    width: 24px;
+}
+
+QComboBox::down-arrow {
+    image: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid #a0a0b0;
+    width: 0;
+    height: 0;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #16213e;
+    color: #ffffff;
+    border: 1px solid #2a2a4a;
+    selection-background-color: #e94560;
     border-radius: 6px;
 }
 
-QListWidget::item {
+/* === Spin boxes === */
+QSpinBox, QDoubleSpinBox {
+    background-color: #16213e;
+    color: #ffffff;
+    border: 1px solid #2a2a4a;
+    border-radius: 6px;
+    padding: 4px 8px;
+    min-height: 30px;
+}
+
+QSpinBox:focus, QDoubleSpinBox:focus {
+    border-color: #e94560;
+}
+
+QSpinBox::up-button, QSpinBox::down-button,
+QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
+    background-color: #0f3460;
+    border: none;
+    width: 20px;
+}
+
+QSpinBox::up-button:hover, QSpinBox::down-button:hover,
+QDoubleSpinBox::up-button:hover, QDoubleSpinBox::down-button:hover {
+    background-color: #e94560;
+}
+
+/* === Tables === */
+QTableWidget, QTableView {
+    background-color: #16213e;
+    color: #ffffff;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    gridline-color: #2a2a4a;
+    selection-background-color: #e94560;
+    alternate-background-color: #1a1a2e;
+}
+
+QTableWidget::item, QTableView::item {
     padding: 6px 8px;
-    border-radius: 4px;
+    border: none;
+}
+
+QTableWidget::item:selected, QTableView::item:selected {
+    background-color: #e94560;
+    color: #ffffff;
+}
+
+QHeaderView::section {
+    background-color: #0f3460;
+    color: #ffffff;
+    padding: 8px 10px;
+    border: none;
+    border-bottom: 2px solid #e94560;
+    font-weight: bold;
+}
+
+/* === List widgets === */
+QListWidget {
+    background-color: #16213e;
+    color: #ffffff;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    alternate-background-color: #1a1a2e;
+}
+
+QListWidget::item {
+    padding: 8px 10px;
+    border-bottom: 1px solid #2a2a4a;
 }
 
 QListWidget::item:selected {
-    background-color: #313244;
-    color: #89b4fa;
+    background-color: #e94560;
+    color: #ffffff;
 }
 
 QListWidget::item:hover {
-    background-color: #313244;
+    background-color: #0f3460;
 }
 
-/* === Полосы прокрутки === */
+/* === Progress bars === */
+QProgressBar {
+    background-color: #16213e;
+    color: #ffffff;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    text-align: center;
+    min-height: 20px;
+}
+
+QProgressBar::chunk {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #e94560, stop:1 #c73652);
+    border-radius: 8px;
+}
+
+/* === Checkboxes === */
+QCheckBox {
+    color: #ffffff;
+    spacing: 8px;
+}
+
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    background-color: #16213e;
+    border: 2px solid #2a2a4a;
+    border-radius: 4px;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #e94560;
+    border-color: #e94560;
+}
+
+QCheckBox::indicator:hover {
+    border-color: #e94560;
+}
+
+/* === Radio buttons === */
+QRadioButton {
+    color: #ffffff;
+    spacing: 8px;
+}
+
+QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    background-color: #16213e;
+    border: 2px solid #2a2a4a;
+    border-radius: 8px;
+}
+
+QRadioButton::indicator:checked {
+    background-color: #e94560;
+    border-color: #e94560;
+}
+
+/* === Scroll bars === */
 QScrollBar:vertical {
-    background-color: #181825;
+    background-color: #1a1a2e;
     width: 10px;
     border-radius: 5px;
 }
 
 QScrollBar::handle:vertical {
-    background-color: #45475a;
+    background-color: #2a2a4a;
     border-radius: 5px;
-    min-height: 30px;
+    min-height: 20px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background-color: #89b4fa;
+    background-color: #e94560;
 }
 
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-    height: 0;
+    height: 0px;
 }
 
 QScrollBar:horizontal {
-    background-color: #181825;
+    background-color: #1a1a2e;
     height: 10px;
     border-radius: 5px;
 }
 
 QScrollBar::handle:horizontal {
-    background-color: #45475a;
+    background-color: #2a2a4a;
     border-radius: 5px;
-    min-width: 30px;
+    min-width: 20px;
 }
 
 QScrollBar::handle:horizontal:hover {
-    background-color: #89b4fa;
+    background-color: #e94560;
 }
 
-/* === Строка состояния === */
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
+
+/* === Tabs === */
+QTabWidget::pane {
+    background-color: #16213e;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+}
+
+QTabBar::tab {
+    background-color: #1a1a2e;
+    color: #a0a0b0;
+    padding: 8px 20px;
+    margin-right: 2px;
+    border-radius: 6px 6px 0 0;
+    border: 1px solid #2a2a4a;
+    border-bottom: none;
+}
+
+QTabBar::tab:selected {
+    background-color: #16213e;
+    color: #ffffff;
+    border-bottom: 2px solid #e94560;
+}
+
+QTabBar::tab:hover:!selected {
+    background-color: #16213e;
+    color: #ffffff;
+}
+
+/* === Date/Time edit === */
+QDateEdit, QTimeEdit, QDateTimeEdit {
+    background-color: #16213e;
+    color: #ffffff;
+    border: 1px solid #2a2a4a;
+    border-radius: 6px;
+    padding: 4px 8px;
+    min-height: 30px;
+}
+
+QDateEdit:focus, QTimeEdit:focus, QDateTimeEdit:focus {
+    border-color: #e94560;
+}
+
+QDateEdit::drop-down, QTimeEdit::drop-down, QDateTimeEdit::drop-down {
+    border: none;
+    width: 24px;
+}
+
+QCalendarWidget {
+    background-color: #16213e;
+    color: #ffffff;
+}
+
+QCalendarWidget QToolButton {
+    background-color: #0f3460;
+    color: #ffffff;
+    border-radius: 4px;
+}
+
+QCalendarWidget QAbstractItemView {
+    background-color: #16213e;
+    selection-background-color: #e94560;
+}
+
+/* === Menu bar === */
+QMenuBar {
+    background-color: #1a1a2e;
+    color: #ffffff;
+    border-bottom: 1px solid #2a2a4a;
+    padding: 2px;
+}
+
+QMenuBar::item:selected {
+    background-color: #e94560;
+    border-radius: 4px;
+}
+
+QMenu {
+    background-color: #16213e;
+    color: #ffffff;
+    border: 1px solid #2a2a4a;
+    border-radius: 6px;
+    padding: 4px;
+}
+
+QMenu::item:selected {
+    background-color: #e94560;
+    color: #ffffff;
+    border-radius: 4px;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: #2a2a4a;
+    margin: 4px 8px;
+}
+
+/* === Status bar === */
 QStatusBar {
-    background-color: #181825;
-    color: #a6adc8;
-    border-top: 1px solid #313244;
+    background-color: #1a1a2e;
+    color: #a0a0b0;
+    border-top: 1px solid #2a2a4a;
 }
 
-/* === Диалоги === */
+/* === Dialogs === */
 QDialog {
-    background-color: #1e1e2e;
+    background-color: #16213e;
 }
 
-QDialogButtonBox QPushButton {
-    min-width: 80px;
+QMessageBox {
+    background-color: #16213e;
 }
 
-/* === Метки === */
+/* === Labels === */
 QLabel {
-    color: #cdd6f4;
+    color: #ffffff;
 }
 
 QLabel#fileLabel {
-    color: #a6adc8;
+    color: #a0a0b0;
     font-style: italic;
 }
 
-/* === Подсказки === */
+/* === Splitter === */
+QSplitter::handle {
+    background-color: #2a2a4a;
+}
+
+/* === Tool tips === */
 QToolTip {
-    background-color: #181825;
-    color: #cdd6f4;
-    border: 1px solid #45475a;
+    background-color: #16213e;
+    color: #ffffff;
+    border: 1px solid #e94560;
     border-radius: 4px;
     padding: 4px 8px;
+}
+
+/* === Frame === */
+QFrame[frameShape="4"],
+QFrame[frameShape="5"] {
+    color: #2a2a4a;
+}
+
+/* === Recent list === */
+QListWidget#recentList {
+    background-color: #0f0f1a;
+    border: 1px solid #2a2a4a;
+}
+
+/* === Accounts table === */
+QTableWidget#accountsTable {
+    background-color: #16213e;
 }
