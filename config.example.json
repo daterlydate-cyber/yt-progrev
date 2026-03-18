@@ -1,0 +1,38 @@
+{
+  "warmup_settings": {
+    "keywords": ["кулинария", "рецепты", "готовка", "вкусная еда"],
+    "categories": ["Люди и блоги", "Развлечения", "Образование"],
+    "actions_per_session": 10,
+    "watch_duration_range": [30, 180],
+    "like_probability": 0.3,
+    "subscribe_probability": 0.1,
+    "comment_probability": 0.05,
+    "comment_templates": [
+      "Отличное видео! Спасибо за контент 👍",
+      "Очень интересно, подписался!",
+      "Полезная информация, продолжай в том же духе",
+      "Круто! Буду ждать следующих видео",
+      "Хорошая работа!"
+    ]
+  },
+  "poster_settings": {
+    "upload_interval_minutes": 60,
+    "default_title_template": "Видео от {date}",
+    "default_description_template": "Загружено автоматически {date} в {time}",
+    "default_tags": ["youtube", "видео", "контент"]
+  },
+  "browser_settings": {
+    "headless": false,
+    "window_size": "1280,720",
+    "default_language": "ru-RU"
+  },
+  "proxy_settings": {
+    "enabled": false,
+    "proxy_list_file": "data/proxies.txt",
+    "rotation_mode": "round-robin"
+  },
+  "scheduler_settings": {
+    "warmup_schedule": "0 */6 * * *",
+    "posting_schedule": "0 12 * * *"
+  }
+}
