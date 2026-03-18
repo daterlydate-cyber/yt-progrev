@@ -37,6 +37,7 @@ class TaskScheduler(QThread):
     task_started = pyqtSignal(str)    # task_id
     task_completed = pyqtSignal(str)  # task_id
     task_error = pyqtSignal(str)      # сообщение об ошибке
+    post_uploaded = pyqtSignal(str, str)  # post_id, status
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -125,6 +126,94 @@ class TaskScheduler(QThread):
             time_str,
         )
         return task.task_id
+
+    def add_content_plan_task(self, post_id: str, content_plan) -> str:
+        """
+        Добавить задачу из контент-плана.
+
+        :param post_id: ID поста в ContentPlan
+        :param content_plan: Экземпляр ContentPlan
+        :return: ID созданной задачи
+        """
+        post = content_plan.get_post(post_id)
+        if post is None:
+            raise ValueError(f"Пост '{post_id}' не найден в контент-плане.")
+
+        task = Task(
+            task_type="content_plan",
+            profile_name=post.profile_name,
+            schedule_str=f"{post.scheduled_date} {post.scheduled_time}",
+            extra={"post_id": post_id},
+        )
+        self._tasks[task.task_id] = task
+
+        def job():
+            # Получаем пост свежим из плана, чтобы избежать устаревших данных
+            current_post = content_plan.get_post(post_id)
+            if current_post is None:
+                return  # Пост был удалён
+            current_date = datetime.now().strftime("%Y-%m-%d")
+            if current_date != current_post.scheduled_date:
+                return  # Не тот день — пропускаем
+            self._run_content_plan_task(task.task_id, content_plan)
+
+        schedule.every().day.at(post.scheduled_time).do(job).tag(task.task_id)
+        logger.info(
+            "Задача контент-плана добавлена: %s, пост '%s', в %s %s.",
+            task.task_id,
+            post_id,
+            post.scheduled_date,
+            post.scheduled_time,
+        )
+        return task.task_id
+
+    def _run_content_plan_task(self, task_id: str, content_plan) -> None:
+        """Выполнить задачу из контент-плана."""
+        task = self._tasks.get(task_id)
+        if task is None or not task.enabled:
+            return
+
+        post_id = task.extra.get("post_id")
+        post = content_plan.get_post(post_id)
+        if post is None:
+            return
+
+        task.status = "выполняется"
+        task.last_run = datetime.now().isoformat()
+        self.task_started.emit(task_id)
+
+        try:
+            from core.browser_manager import BrowserManager
+            from core.poster_engine import PosterEngine
+
+            bm = BrowserManager()
+            engine = PosterEngine(
+                profile_name=post.profile_name,
+                browser_manager=bm,
+                video_path=post.video_path,
+                title=post.title,
+                description=post.description,
+                tags=post.tags,
+                thumbnail_path=post.thumbnail_path if post.thumbnail_path else None,
+                privacy=post.privacy,
+            )
+            engine.run()
+
+            post.status = "done"
+            content_plan.update_post(post)
+            task.status = "завершено"
+            self.task_completed.emit(task_id)
+            self.post_uploaded.emit(post_id, "done")
+            logger.info("Пост '%s' успешно загружен планировщиком.", post_id)
+        except Exception as exc:
+            post.status = "error"
+            post.error_msg = str(exc)
+            content_plan.update_post(post)
+            task.status = "ошибка"
+            error_msg = f"Ошибка задачи контент-плана '{task_id}': {exc}"
+            logger.error(error_msg)
+            self.task_error.emit(error_msg)
+            self.post_uploaded.emit(post_id, "error")
 
     def remove_task(self, task_id: str) -> None:
         """

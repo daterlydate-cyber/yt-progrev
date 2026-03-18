@@ -23,6 +23,7 @@ from core.browser_manager import BrowserManager
 from core.profile_manager import ProfileManager
 from core.scheduler import TaskScheduler
 from gui.browser_widget import BrowserWidget
+from gui.content_plan_widget import ContentPlanWidget
 from gui.poster_widget import PosterWidget
 from gui.profile_widget import ProfileWidget
 from gui.proxy_widget import ProxyWidget
@@ -86,6 +87,11 @@ class MainWindow(QMainWindow):
             self.scheduler, self.profile_manager, parent=self
         )
 
+        # Виджет контент-плана
+        self.content_plan_widget = ContentPlanWidget(
+            self.profile_manager, self.browser_manager, self.scheduler, parent=self
+        )
+
         # Вкладка «Логи»
         self.log_widget = QTextEdit()
         self.log_widget.setReadOnly(True)
@@ -98,6 +104,7 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.browser_widget, "🌐 Браузер")
         self.tabs.addTab(self.proxy_widget, "🔗 Прокси")
         self.tabs.addTab(self.scheduler_widget, "📅 Планировщик")
+        self.tabs.addTab(self.content_plan_widget, "📆 Контент-план")
         self.tabs.addTab(self.log_widget, "📋 Логи")
 
         layout.addWidget(self.tabs)
