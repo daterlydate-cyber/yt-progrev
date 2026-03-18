@@ -8,6 +8,7 @@ from typing import Optional
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
+    QAction,
     QComboBox,
     QDialog,
     QDialogButtonBox,
@@ -17,6 +18,7 @@ from PyQt5.QtWidgets import (
     QHeaderView,
     QLabel,
     QLineEdit,
+    QMenu,
     QMessageBox,
     QPushButton,
     QTableWidget,
@@ -170,6 +172,8 @@ class ProfileWidget(QWidget):
         self.table.setSelectionBehavior(QTableWidget.SelectRows)
         self.table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.table.setAlternatingRowColors(True)
+        self.table.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self._show_context_menu)
         layout.addWidget(self.table)
 
     def refresh_profiles(self) -> None:
@@ -305,5 +309,88 @@ class ProfileWidget(QWidget):
                 QMessageBox.information(
                     self, "Готово", f"Профиль '{name}' импортирован."
                 )
+            except Exception as exc:
+                QMessageBox.critical(self, "Ошибка", str(exc))
+
+    def _show_context_menu(self, pos) -> None:
+        """Показать контекстное меню по правому клику на строке профиля."""
+        row = self.table.rowAt(pos.y())
+        if row < 0:
+            return
+        self.table.selectRow(row)
+
+        menu = QMenu(self)
+
+        change_proxy_action = QAction("🌐 Изменить прокси", self)
+        change_proxy_action.triggered.connect(self._change_proxy)
+        menu.addAction(change_proxy_action)
+
+        clear_proxy_action = QAction("🚫 Убрать прокси", self)
+        clear_proxy_action.triggered.connect(self._clear_proxy)
+        menu.addAction(clear_proxy_action)
+
+        menu.addSeparator()
+
+        open_browser_action = QAction("🌐 Открыть браузер", self)
+        open_browser_action.triggered.connect(self._open_browser)
+        menu.addAction(open_browser_action)
+
+        delete_action = QAction("🗑️ Удалить профиль", self)
+        delete_action.triggered.connect(self._delete_profile)
+        menu.addAction(delete_action)
+
+        menu.exec_(self.table.viewport().mapToGlobal(pos))
+
+    def _change_proxy(self) -> None:
+        """Изменить прокси для выбранного профиля."""
+        name = self._get_selected_profile_name()
+        if not name:
+            return
+
+        profile = self.profile_manager.get_profile(name)
+        current_proxy = profile.get("proxy", "") or "" if profile else ""
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle(f"Изменить прокси — {name}")
+        dialog.setMinimumWidth(440)
+        layout = QFormLayout(dialog)
+
+        proxy_edit = QLineEdit(current_proxy)
+        proxy_edit.setPlaceholderText("http://user:pass@host:port (опционально)")
+        layout.addRow("Прокси:", proxy_edit)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        layout.addRow(buttons)
+
+        if dialog.exec_() == QDialog.Accepted:
+            new_proxy = proxy_edit.text().strip() or None
+            try:
+                self.profile_manager.update_profile(name, {"proxy": new_proxy or ""})
+                self.refresh_profiles()
+                msg = f"Прокси профиля '{name}' обновлён: {new_proxy or '(без прокси)'}"
+                QMessageBox.information(self, "Готово", msg)
+                logger.info("Прокси профиля '%s' изменён на '%s'.", name, new_proxy)
+            except Exception as exc:
+                QMessageBox.critical(self, "Ошибка", str(exc))
+
+    def _clear_proxy(self) -> None:
+        """Убрать прокси у выбранного профиля."""
+        name = self._get_selected_profile_name()
+        if not name:
+            return
+        reply = QMessageBox.question(
+            self,
+            "Убрать прокси",
+            f"Убрать прокси у профиля '{name}'?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if reply == QMessageBox.Yes:
+            try:
+                self.profile_manager.update_profile(name, {"proxy": ""})
+                self.refresh_profiles()
+                logger.info("Прокси профиля '%s' удалён.", name)
             except Exception as exc:
                 QMessageBox.critical(self, "Ошибка", str(exc))

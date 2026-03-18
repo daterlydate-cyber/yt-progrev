@@ -1,6 +1,6 @@
 #define MyAppName "YT-Progrev"
 #ifndef MyAppVersion
-  #define MyAppVersion "1.0.0"
+  #define MyAppVersion "2.0.0"
 #endif
 #define MyAppPublisher "daterlydate-cyber"
 #define MyAppURL "https://github.com/daterlydate-cyber/yt-progrev"

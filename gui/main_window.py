@@ -28,7 +28,7 @@ from utils.proxy_manager import ProxyManager
 
 logger = get_logger(__name__)
 
-APP_VERSION = "2.0"
+APP_VERSION = "2.0.0"
 
 
 class NavButton(QPushButton):
