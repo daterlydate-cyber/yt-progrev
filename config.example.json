@@ -29,6 +29,7 @@
   "proxy_settings": {
     "enabled": false,
     "proxy_list_file": "data/proxies.txt",
+    "saved_proxies_file": "data/proxies_saved.json",
     "rotation_mode": "round-robin"
   },
   "scheduler_settings": {

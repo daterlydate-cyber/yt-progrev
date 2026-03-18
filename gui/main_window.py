@@ -25,9 +25,11 @@ from core.scheduler import TaskScheduler
 from gui.browser_widget import BrowserWidget
 from gui.poster_widget import PosterWidget
 from gui.profile_widget import ProfileWidget
+from gui.proxy_widget import ProxyWidget
 from gui.scheduler_widget import SchedulerWidget
 from gui.warmup_widget import WarmupWidget
 from utils.logger import QtLogHandler, get_logger
+from utils.proxy_manager import ProxyManager
 
 logger = get_logger(__name__)
 
@@ -42,6 +44,8 @@ class MainWindow(QMainWindow):
         self.browser_manager = BrowserManager()
         self.profile_manager = ProfileManager()
         self.scheduler = TaskScheduler()
+        self.proxy_manager = ProxyManager()
+        self.proxy_manager.load_saved_proxies()
 
         self.setWindowTitle("YT-Progrev — YouTube Автопостер с Прогревом")
         self.setMinimumSize(1100, 700)
@@ -77,6 +81,7 @@ class MainWindow(QMainWindow):
         self.browser_widget = BrowserWidget(
             self.browser_manager, self.profile_manager, parent=self
         )
+        self.proxy_widget = ProxyWidget(self.proxy_manager, parent=self)
         self.scheduler_widget = SchedulerWidget(
             self.scheduler, self.profile_manager, parent=self
         )
@@ -91,6 +96,7 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.warmup_widget, "🔥 Прогрев")
         self.tabs.addTab(self.poster_widget, "📤 Автопостинг")
         self.tabs.addTab(self.browser_widget, "🌐 Браузер")
+        self.tabs.addTab(self.proxy_widget, "🔗 Прокси")
         self.tabs.addTab(self.scheduler_widget, "📅 Планировщик")
         self.tabs.addTab(self.log_widget, "📋 Логи")
 
