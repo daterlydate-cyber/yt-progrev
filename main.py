@@ -18,6 +18,7 @@ def ensure_directories() -> None:
         "data/cookies",
         "data/videos",
         "data/logs",
+        "data/proxies",
     ]
     for d in dirs:
         Path(d).mkdir(parents=True, exist_ok=True)
