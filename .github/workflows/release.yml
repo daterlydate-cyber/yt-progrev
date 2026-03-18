@@ -27,7 +27,20 @@ jobs:
 
       - name: Build executable
         run: |
-          pyinstaller --onefile --windowed --name "YT-Progrev" main.py
+          pyinstaller --onefile --windowed --name "YT-Progrev" `
+            --hidden-import=selenium.webdriver.common.action_chains `
+            --hidden-import=selenium.webdriver.common.by `
+            --hidden-import=selenium.webdriver.common.keys `
+            --hidden-import=selenium.webdriver.common.options `
+            --hidden-import=selenium.webdriver.common.service `
+            --hidden-import=selenium.webdriver.support.expected_conditions `
+            --hidden-import=selenium.webdriver.support.wait `
+            --hidden-import=selenium.webdriver.support.ui `
+            --hidden-import=selenium.webdriver.chrome.service `
+            --hidden-import=selenium.webdriver.chrome.webdriver `
+            --hidden-import=selenium.webdriver.chrome.options `
+            --hidden-import=selenium.common.exceptions `
+            main.py
 
       - name: Install Inno Setup
         run: choco install innosetup -y
