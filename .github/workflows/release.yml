@@ -28,18 +28,29 @@ jobs:
       - name: Build executable
         run: |
           pyinstaller --onefile --windowed --name "YT-Progrev" `
+            --collect-all selenium `
+            --collect-all undetected_chromedriver `
             --hidden-import=selenium.webdriver.common.action_chains `
             --hidden-import=selenium.webdriver.common.by `
             --hidden-import=selenium.webdriver.common.keys `
             --hidden-import=selenium.webdriver.common.options `
             --hidden-import=selenium.webdriver.common.service `
+            --hidden-import=selenium.webdriver.common.desired_capabilities `
+            --hidden-import=selenium.webdriver.common.proxy `
+            --hidden-import=selenium.webdriver.common.timeouts `
+            --hidden-import=selenium.webdriver.common.utils `
             --hidden-import=selenium.webdriver.support.expected_conditions `
             --hidden-import=selenium.webdriver.support.wait `
             --hidden-import=selenium.webdriver.support.ui `
+            --hidden-import=selenium.webdriver.support.select `
             --hidden-import=selenium.webdriver.chrome.service `
             --hidden-import=selenium.webdriver.chrome.webdriver `
             --hidden-import=selenium.webdriver.chrome.options `
             --hidden-import=selenium.common.exceptions `
+            --hidden-import=undetected_chromedriver `
+            --hidden-import=fake_useragent `
+            --hidden-import=schedule `
+            --hidden-import=dotenv `
             main.py
 
       - name: Install Inno Setup
