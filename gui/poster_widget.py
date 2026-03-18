@@ -1,16 +1,17 @@
 """
-Виджет публикации видео на YouTube — с вкладками New Post / Queue / History.
+Виджет публикации видео на YouTube — с вкладками New Post / Batch / Queue / History.
 """
 
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QDateTime
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QComboBox,
+    QDateTimeEdit,
     QFileDialog,
     QGroupBox,
     QHBoxLayout,
@@ -41,6 +42,7 @@ class PosterWidget(QWidget):
 
     HISTORY_COLUMNS = ["Дата", "Профиль", "Файл", "Заголовок", "Статус"]
     QUEUE_COLUMNS = ["ID", "Дата/Время", "Аккаунт", "Заголовок", "Статус"]
+    BATCH_COLUMNS = ["#", "Файл", "Заголовок", "Аккаунт", "Запланировано", "Статус"]
     TITLE_MAX_LENGTH = 100
     DESC_MAX_LENGTH = 5000
     YOUTUBE_CATEGORIES = [
@@ -63,6 +65,7 @@ class PosterWidget(QWidget):
         self._engine: Optional[PosterEngine] = None
         self._selected_video: Optional[str] = None
         self._selected_thumbnail: Optional[str] = None
+        self._batch_files: List[dict] = []  # list of {path, title, status}
         self._setup_ui()
         self.refresh_profiles()
 
@@ -80,6 +83,7 @@ class PosterWidget(QWidget):
         # Tabs
         self.tabs = QTabWidget()
         self.tabs.addTab(self._create_new_post_tab(), "📤 Новый пост")
+        self.tabs.addTab(self._create_batch_tab(), "📦 Пакетная загрузка")
         self.tabs.addTab(self._create_queue_tab(), "📅 Очередь")
         self.tabs.addTab(self._create_history_tab(), "📋 История")
         layout.addWidget(self.tabs)
@@ -197,6 +201,18 @@ class PosterWidget(QWidget):
         btn_row.addWidget(self.schedule_btn)
         ctrl_layout.addLayout(btn_row)
 
+        # Schedule date/time picker (shown when "Запланировать" workflow)
+        sched_row = QHBoxLayout()
+        sched_row.addWidget(QLabel("Дата и время публикации:"))
+        self.schedule_datetime = QDateTimeEdit()
+        self.schedule_datetime.setCalendarPopup(True)
+        self.schedule_datetime.setDateTime(QDateTime.currentDateTime().addSecs(3600))
+        self.schedule_datetime.setDisplayFormat("dd.MM.yyyy HH:mm")
+        self.schedule_datetime.setMinimumWidth(180)
+        sched_row.addWidget(self.schedule_datetime)
+        sched_row.addStretch()
+        ctrl_layout.addLayout(sched_row)
+
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
         ctrl_layout.addWidget(self.progress_bar)
@@ -206,6 +222,264 @@ class PosterWidget(QWidget):
 
         main_layout.addWidget(ctrl_group)
         return widget
+
+    def _create_batch_tab(self) -> QWidget:
+        """Создать вкладку пакетной загрузки видео."""
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setSpacing(10)
+
+        # Common settings
+        settings_group = QGroupBox("Общие настройки")
+        settings_layout = QHBoxLayout(settings_group)
+
+        settings_layout.addWidget(QLabel("Аккаунт:"))
+        self.batch_profile_combo = QComboBox()
+        self.batch_profile_combo.setMinimumWidth(180)
+        settings_layout.addWidget(self.batch_profile_combo)
+
+        settings_layout.addSpacing(12)
+        settings_layout.addWidget(QLabel("Доступ:"))
+        self.batch_privacy_combo = QComboBox()
+        self.batch_privacy_combo.addItems(["Публичное", "По ссылке", "Приватное"])
+        settings_layout.addWidget(self.batch_privacy_combo)
+
+        settings_layout.addSpacing(12)
+        settings_layout.addWidget(QLabel("Интервал между видео (мин):"))
+        self.batch_interval_spin = QSpinBox()
+        self.batch_interval_spin.setRange(0, 1440)
+        self.batch_interval_spin.setValue(30)
+        self.batch_interval_spin.setSuffix(" мин")
+        settings_layout.addWidget(self.batch_interval_spin)
+
+        settings_layout.addSpacing(12)
+        settings_layout.addWidget(QLabel("Начало загрузки:"))
+        self.batch_start_dt = QDateTimeEdit()
+        self.batch_start_dt.setCalendarPopup(True)
+        self.batch_start_dt.setDateTime(QDateTime.currentDateTime().addSecs(300))
+        self.batch_start_dt.setDisplayFormat("dd.MM.yyyy HH:mm")
+        settings_layout.addWidget(self.batch_start_dt)
+        settings_layout.addStretch()
+        layout.addWidget(settings_group)
+
+        # Toolbar
+        toolbar = QHBoxLayout()
+        add_videos_btn = QPushButton("📁 Добавить видео")
+        add_videos_btn.setObjectName("accentButton")
+        add_videos_btn.clicked.connect(self._batch_add_videos)
+        toolbar.addWidget(add_videos_btn)
+
+        remove_btn = QPushButton("🗑️ Удалить выбранные")
+        remove_btn.clicked.connect(self._batch_remove_selected)
+        toolbar.addWidget(remove_btn)
+
+        clear_btn = QPushButton("🧹 Очистить список")
+        clear_btn.clicked.connect(self._batch_clear)
+        toolbar.addWidget(clear_btn)
+
+        toolbar.addStretch()
+
+        upload_all_btn = QPushButton("📤 Загрузить все сейчас")
+        upload_all_btn.clicked.connect(self._batch_upload_now)
+        toolbar.addWidget(upload_all_btn)
+
+        schedule_all_btn = QPushButton("📅 Запланировать все")
+        schedule_all_btn.setObjectName("accentButton")
+        schedule_all_btn.clicked.connect(self._batch_schedule_all)
+        toolbar.addWidget(schedule_all_btn)
+        layout.addLayout(toolbar)
+
+        # Batch table
+        self.batch_table = QTableWidget(0, len(self.BATCH_COLUMNS))
+        self.batch_table.setHorizontalHeaderLabels(self.BATCH_COLUMNS)
+        self.batch_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.batch_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
+        for col in [0, 3, 4, 5]:
+            self.batch_table.horizontalHeader().setSectionResizeMode(
+                col, QHeaderView.ResizeToContents
+            )
+        self.batch_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.batch_table.setAlternatingRowColors(True)
+        layout.addWidget(self.batch_table)
+
+        # Batch progress
+        self.batch_progress = QProgressBar()
+        self.batch_progress.setVisible(False)
+        self.batch_status_label = QLabel("")
+        self.batch_status_label.setStyleSheet("color: #8890a4;")
+        layout.addWidget(self.batch_progress)
+        layout.addWidget(self.batch_status_label)
+
+        return widget
+
+    def _batch_add_videos(self) -> None:
+        """Открыть диалог выбора нескольких видеофайлов для пакетной загрузки."""
+        file_paths, _ = QFileDialog.getOpenFileNames(
+            self, "Выбрать видео для пакетной загрузки", "data/videos",
+            "Видеофайлы (*.mp4 *.mov *.avi *.mkv *.webm);;Все файлы (*)",
+        )
+        for path in file_paths:
+            p = Path(path)
+            entry = {"path": path, "title": p.stem, "status": "⏳ Ожидание"}
+            self._batch_files.append(entry)
+        self._batch_refresh_table()
+
+    def _batch_refresh_table(self) -> None:
+        """Обновить таблицу пакетной загрузки."""
+        from datetime import timedelta
+
+        self.batch_table.setRowCount(0)
+        base_dt = self.batch_start_dt.dateTime().toPyDateTime()
+        interval = self.batch_interval_spin.value()
+
+        for i, entry in enumerate(self._batch_files):
+            row = self.batch_table.rowCount()
+            self.batch_table.insertRow(row)
+            sched_dt = base_dt + timedelta(minutes=interval * i)
+            values = [
+                str(i + 1),
+                Path(entry["path"]).name,
+                entry["title"],
+                self.batch_profile_combo.currentText(),
+                sched_dt.strftime("%d.%m.%Y %H:%M"),
+                entry["status"],
+            ]
+            for col, val in enumerate(values):
+                item = QTableWidgetItem(val)
+                item.setTextAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+                if col == 2:  # Title is editable
+                    item.setFlags(item.flags() | Qt.ItemIsEditable)
+                self.batch_table.setItem(row, col, item)
+
+        # Sync edited titles back
+        self.batch_table.itemChanged.connect(self._batch_sync_title)
+
+    def _batch_sync_title(self, item: QTableWidgetItem) -> None:
+        """Синхронизировать изменённый заголовок обратно в список."""
+        if item.column() == 2:
+            row = item.row()
+            if 0 <= row < len(self._batch_files):
+                self._batch_files[row]["title"] = item.text()
+
+    def _batch_remove_selected(self) -> None:
+        rows = sorted(
+            set(item.row() for item in self.batch_table.selectedItems()),
+            reverse=True,
+        )
+        for row in rows:
+            if 0 <= row < len(self._batch_files):
+                self._batch_files.pop(row)
+        self._batch_refresh_table()
+
+    def _batch_clear(self) -> None:
+        self._batch_files.clear()
+        self.batch_table.setRowCount(0)
+
+    def _batch_upload_now(self) -> None:
+        """Немедленно начать пакетную загрузку всех видео в очереди."""
+        if not self._batch_files:
+            QMessageBox.information(self, "Пусто", "Добавьте видео в список.")
+            return
+        profile_name = self.batch_profile_combo.currentText()
+        if not profile_name:
+            QMessageBox.warning(self, "Ошибка", "Выберите аккаунт.")
+            return
+
+        total = len(self._batch_files)
+        self.batch_progress.setRange(0, total)
+        self.batch_progress.setValue(0)
+        self.batch_progress.setVisible(True)
+
+        privacy_map = {"Публичное": "public", "По ссылке": "unlisted", "Приватное": "private"}
+        privacy = privacy_map.get(self.batch_privacy_combo.currentText(), "public")
+
+        for i, entry in enumerate(self._batch_files):
+            self._set_batch_status(i, "⚙️ Загрузка...")
+            try:
+                engine = PosterEngine(
+                    profile_name=profile_name,
+                    browser_manager=self.browser_manager,
+                    video_path=entry["path"],
+                    title=entry["title"],
+                    description="",
+                    tags=[],
+                    thumbnail_path=None,
+                    privacy=privacy,
+                )
+                engine.run()
+                self._set_batch_status(i, "✅ Загружено")
+                self._batch_files[i]["status"] = "✅ Загружено"
+            except Exception as exc:
+                self._set_batch_status(i, f"❌ {str(exc)[:40]}")
+                self._batch_files[i]["status"] = "❌ Ошибка"
+            self.batch_progress.setValue(i + 1)
+            self.batch_status_label.setText(f"Загружено {i + 1}/{total}")
+
+        self.batch_progress.setVisible(False)
+        QMessageBox.information(self, "Готово", f"Пакетная загрузка завершена. Загружено {total} видео.")
+
+    def _batch_schedule_all(self) -> None:
+        """Добавить все видео из пакетного списка в планировщик с временными интервалами."""
+        if not self._batch_files:
+            QMessageBox.information(self, "Пусто", "Добавьте видео в список.")
+            return
+        profile_name = self.batch_profile_combo.currentText()
+        if not profile_name:
+            QMessageBox.warning(self, "Ошибка", "Выберите аккаунт.")
+            return
+
+        from datetime import timedelta
+
+        base_dt = self.batch_start_dt.dateTime().toPyDateTime()
+        interval = self.batch_interval_spin.value()
+        privacy_map = {"Публичное": "public", "По ссылке": "unlisted", "Приватное": "private"}
+        privacy = privacy_map.get(self.batch_privacy_combo.currentText(), "public")
+
+        # Get scheduler from parent window
+        scheduler = None
+        parent = self.parent()
+        if hasattr(parent, "scheduler"):
+            scheduler = parent.scheduler
+
+        scheduled_count = 0
+        for i, entry in enumerate(self._batch_files):
+            sched_dt = base_dt + timedelta(minutes=interval * i)
+            time_str = sched_dt.strftime("%H:%M")
+            metadata = {
+                "title": entry["title"],
+                "privacy": privacy,
+            }
+            if scheduler is not None:
+                try:
+                    scheduler.add_posting_task(
+                        profile_name=profile_name,
+                        video_path=entry["path"],
+                        metadata=metadata,
+                        time_str=time_str,
+                    )
+                    self._set_batch_status(i, f"📅 {sched_dt.strftime('%d.%m %H:%M')}")
+                    self._batch_files[i]["status"] = f"📅 {sched_dt.strftime('%d.%m %H:%M')}"
+                    scheduled_count += 1
+                except Exception as exc:
+                    self._set_batch_status(i, f"❌ {str(exc)[:40]}")
+            else:
+                self._set_batch_status(i, f"📅 {sched_dt.strftime('%d.%m %H:%M')}")
+                scheduled_count += 1
+
+        self._batch_refresh_table()
+        QMessageBox.information(
+            self, "Готово",
+            f"Запланировано {scheduled_count} видео.\n"
+            f"Первая публикация: {base_dt.strftime('%d.%m.%Y %H:%M')}",
+        )
+
+    def _set_batch_status(self, row: int, status: str) -> None:
+        """Обновить статус в строке пакетной таблицы."""
+        if row < self.batch_table.rowCount():
+            item = QTableWidgetItem(status)
+            item.setTextAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+            self.batch_table.setItem(row, 5, item)
 
     def _create_queue_tab(self) -> QWidget:
         widget = QWidget()
@@ -254,8 +528,10 @@ class PosterWidget(QWidget):
     def refresh_profiles(self) -> None:
         current = self.profile_combo.currentText()
         self.profile_combo.clear()
+        self.batch_profile_combo.clear()
         for p in self.profile_manager.list_profiles():
             self.profile_combo.addItem(p["name"])
+            self.batch_profile_combo.addItem(p["name"])
         idx = self.profile_combo.findText(current)
         if idx >= 0:
             self.profile_combo.setCurrentIndex(idx)
@@ -351,7 +627,60 @@ class PosterWidget(QWidget):
         self._engine.start()
 
     def _schedule_post(self) -> None:
-        QMessageBox.information(self, "Планировщик", "Используйте вкладку «Планировщик» для настройки расписания.")
+        """Добавить текущий пост в планировщик на выбранную дату/время."""
+        profile_name = self.profile_combo.currentText()
+        if not profile_name:
+            QMessageBox.warning(self, "Ошибка", "Выберите аккаунт.")
+            return
+        if not self._selected_video:
+            QMessageBox.warning(self, "Ошибка", "Выберите видеофайл.")
+            return
+        if not self.title_edit.text().strip():
+            QMessageBox.warning(self, "Ошибка", "Введите заголовок.")
+            return
+
+        sched_dt = self.schedule_datetime.dateTime().toPyDateTime()
+        time_str = sched_dt.strftime("%H:%M")
+        privacy_map = {"Публичное": "public", "По ссылке": "unlisted", "Приватное": "private"}
+        privacy = privacy_map.get(self.privacy_combo.currentText(), "public")
+        tags = [t.strip() for t in self.tags_edit.text().split(",") if t.strip()]
+
+        metadata = {
+            "title": self.title_edit.text().strip(),
+            "description": self.desc_edit.toPlainText(),
+            "tags": tags,
+            "thumbnail_path": self._selected_thumbnail,
+            "privacy": privacy,
+        }
+
+        # Get scheduler from parent window
+        scheduler = None
+        parent = self.parent()
+        if hasattr(parent, "scheduler"):
+            scheduler = parent.scheduler
+
+        if scheduler is not None:
+            try:
+                task_id = scheduler.add_posting_task(
+                    profile_name=profile_name,
+                    video_path=self._selected_video,
+                    metadata=metadata,
+                    time_str=time_str,
+                )
+                QMessageBox.information(
+                    self, "Запланировано",
+                    f"Пост запланирован на {sched_dt.strftime('%d.%m.%Y %H:%M')}.\n"
+                    f"ID задачи: {task_id}\n"
+                    "Перейдите в раздел «Планировщик» для управления.",
+                )
+            except Exception as exc:
+                QMessageBox.critical(self, "Ошибка", str(exc))
+        else:
+            QMessageBox.information(
+                self, "Запланировано",
+                f"Пост будет опубликован {sched_dt.strftime('%d.%m.%Y в %H:%M')}.\n"
+                "Перейдите в раздел «Планировщик» для управления задачами.",
+            )
 
     def _refresh_queue(self) -> None:
         pass  # Will be connected to content plan
@@ -386,7 +715,7 @@ class PosterWidget(QWidget):
         self._add_to_history(title, f"❌ Ошибка: {error_msg[:50]}")
 
     def _add_to_history(self, title: str, status: str) -> None:
-        self.tabs.setCurrentIndex(2)  # Switch to History tab
+        self.tabs.setCurrentIndex(self.tabs.count() - 1)  # Switch to History tab (last)
         row = self.history_table.rowCount()
         self.history_table.insertRow(row)
         items = [

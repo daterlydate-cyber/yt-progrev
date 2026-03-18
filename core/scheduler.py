@@ -127,7 +127,49 @@ class TaskScheduler(QThread):
         )
         return task.task_id
 
-    def add_content_plan_task(self, post_id: str, content_plan) -> str:
+    def add_posting_task_by_days(
+        self,
+        profile_name: str,
+        video_path: str,
+        metadata: Dict[str, Any],
+        days: List[str],
+        time_str: str,
+    ) -> str:
+        """
+        Добавить задачу постинга с повторением по дням недели.
+
+        :param profile_name: Имя профиля
+        :param video_path: Путь к видеофайлу
+        :param metadata: Метаданные видео
+        :param days: Список дней недели на английском (monday, tuesday, ...)
+        :param time_str: Время запуска в формате HH:MM
+        :return: ID созданной задачи
+        """
+        days_display = ", ".join(days)
+        task = Task(
+            task_type="posting",
+            profile_name=profile_name,
+            schedule_str=f"{days_display} в {time_str}",
+            extra={"video_path": video_path, "metadata": metadata, "days": days},
+        )
+        self._tasks[task.task_id] = task
+
+        def job():
+            self._run_task(task.task_id)
+
+        for day in days:
+            getattr(schedule.every(), day).at(time_str).do(job).tag(task.task_id)
+
+        logger.info(
+            "Задача постинга по дням добавлена: %s, профиль '%s', дни: %s, в %s.",
+            task.task_id,
+            profile_name,
+            days_display,
+            time_str,
+        )
+        return task.task_id
+
+
         """
         Добавить задачу из контент-плана.
 
