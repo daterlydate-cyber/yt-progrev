@@ -28,6 +28,8 @@ from utils.proxy_manager import ProxyManager
 
 logger = get_logger(__name__)
 
+APP_VERSION = "2.0"
+
 
 class NavButton(QPushButton):
     """Sidebar navigation button."""
@@ -91,7 +93,7 @@ class MainWindow(QMainWindow):
         logo_label.setFont(QFont("Segoe UI", 15, QFont.Bold))
         sidebar_layout.addWidget(logo_label)
 
-        version_label = QLabel("YouTube SMM Панель v2.0")
+        version_label = QLabel(f"YouTube SMM Панель v{APP_VERSION}")
         version_label.setObjectName("sidebarVersion")
         sidebar_layout.addWidget(version_label)
 
@@ -309,7 +311,7 @@ class MainWindow(QMainWindow):
         QMessageBox.about(
             self,
             "О программе",
-            "<h2>YT-Progrev v2.0</h2>"
+            f"<h2>YT-Progrev v{APP_VERSION}</h2>"
             "<p>YouTube SMM Панель — Автопостер с Прогревом Аккаунтов</p>"
             "<p>Работает без YouTube API через браузерную автоматизацию</p>"
             "<p><b>Стек:</b> Python 3.10+, PyQt5, Selenium, undetected-chromedriver</p>"

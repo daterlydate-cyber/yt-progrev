@@ -43,6 +43,13 @@ class PosterWidget(QWidget):
     QUEUE_COLUMNS = ["ID", "Дата/Время", "Аккаунт", "Заголовок", "Статус"]
     TITLE_MAX_LENGTH = 100
     DESC_MAX_LENGTH = 5000
+    YOUTUBE_CATEGORIES = [
+        "Без категории", "Авто/транспорт", "Музыка", "Животные",
+        "Спорт", "Путешествия", "Игры", "Видеоблог",
+        "Люди и блоги", "Комедия", "Развлечения", "Новости",
+        "Политика", "Как это устроено", "Образование",
+        "Наука и техника", "Фильмы", "НКО и активизм",
+    ]
 
     def __init__(
         self,
@@ -166,13 +173,7 @@ class PosterWidget(QWidget):
         opts_row.addSpacing(16)
         opts_row.addWidget(QLabel("Категория:"))
         self.category_combo = QComboBox()
-        self.category_combo.addItems([
-            "Без категории", "Авто/транспорт", "Музыка", "Животные",
-            "Спорт", "Путешествия", "Игры", "Видеоблог",
-            "Люди и блоги", "Комедия", "Развлечения", "Новости",
-            "Политика", "Как это устроено", "Образование",
-            "Наука и техника", "Фильмы", "НКО и активизм"
-        ])
+        self.category_combo.addItems(self.YOUTUBE_CATEGORIES)
         opts_row.addWidget(self.category_combo)
         opts_row.addStretch()
         upload_layout.addLayout(opts_row)
@@ -265,9 +266,13 @@ class PosterWidget(QWidget):
     def _on_desc_changed(self) -> None:
         text = self.desc_edit.toPlainText()
         if len(text) > self.DESC_MAX_LENGTH:
+            truncated = text[:self.DESC_MAX_LENGTH]
+            self.desc_edit.blockSignals(True)
+            self.desc_edit.setPlainText(truncated)
             cursor = self.desc_edit.textCursor()
-            self.desc_edit.setPlainText(text[:self.DESC_MAX_LENGTH])
+            cursor.movePosition(cursor.End)
             self.desc_edit.setTextCursor(cursor)
+            self.desc_edit.blockSignals(False)
         self.desc_counter.setText(f"{min(len(text), self.DESC_MAX_LENGTH)}/{self.DESC_MAX_LENGTH}")
 
     def _select_video(self) -> None:
